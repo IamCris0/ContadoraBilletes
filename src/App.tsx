@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
 import { Activity, Banknote, ClipboardList, LogOut, PanelTop, WalletCards } from "lucide-react";
-import React from "react";
-import { createRoot } from "react-dom/client";
-import "@/index.css";
 import { Login } from "@/componentes/auth/Login";
 import { PanelPrincipal } from "@/componentes/panel/PanelPrincipal";
 import { CajaGeneral } from "@/componentes/caja-general/CajaGeneral";
@@ -10,8 +7,8 @@ import { CajaChica } from "@/componentes/caja-chica/CajaChica";
 import { CortesCaja } from "@/componentes/cortes/CortesCaja";
 import { RegistroActividad } from "@/componentes/actividad/RegistroActividad";
 import { Button } from "@/componentes/compartidos/ui";
-import { ToastProvider, useToast } from "@/componentes/compartidos/Toast";
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/componentes/compartidos/Toast";
+import { useAuth } from "@/hooks/useAuth";
 import { useCaja } from "@/hooks/useCaja";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +22,7 @@ const vistas = [
   { id: "actividad", etiqueta: "Actividad", icono: Activity }
 ] as const;
 
-function Shell() {
+export function Shell() {
   const { usuario, logout } = useAuth();
   const { toast } = useToast();
   const caja = useCaja();
@@ -69,17 +66,3 @@ function Shell() {
     </main>
   );
 }
-
-function Root() {
-  return (
-    <React.StrictMode>
-      <ToastProvider>
-        <AuthProvider>
-          <Shell />
-        </AuthProvider>
-      </ToastProvider>
-    </React.StrictMode>
-  );
-}
-
-createRoot(document.getElementById("root")!).render(<Root />);
