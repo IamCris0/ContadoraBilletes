@@ -1,4 +1,4 @@
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 
 create table if not exists public.usuarios (
   id uuid primary key default gen_random_uuid(),
@@ -66,7 +66,7 @@ create or replace function public.verificar_login(p_nombre_usuario text, p_contr
 returns table (id uuid, nombre_usuario text, creado_en timestamptz)
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 begin
   return query
@@ -123,39 +123,48 @@ alter table public.detalle_billetes enable row level security;
 alter table public.cortes_caja enable row level security;
 alter table public.registro_actividad enable row level security;
 
+drop policy if exists "usuarios pueden consultar su fila por nombre autenticado" on public.usuarios;
 create policy "usuarios pueden consultar su fila por nombre autenticado"
 on public.usuarios for select
 using (true);
 
+drop policy if exists "movimientos visibles para usuarios de caja" on public.movimientos_caja;
 create policy "movimientos visibles para usuarios de caja"
 on public.movimientos_caja for select
 using (exists (select 1 from public.usuarios u where u.id = usuario_id));
 
+drop policy if exists "movimientos insertables por usuarios de caja" on public.movimientos_caja;
 create policy "movimientos insertables por usuarios de caja"
 on public.movimientos_caja for insert
 with check (exists (select 1 from public.usuarios u where u.id = usuario_id));
 
+drop policy if exists "movimientos anulables por usuarios de caja" on public.movimientos_caja;
 create policy "movimientos anulables por usuarios de caja"
 on public.movimientos_caja for update
 using (exists (select 1 from public.usuarios u where u.id = usuario_id))
 with check (anulado = true and length(trim(coalesce(motivo_anulacion, ''))) > 0);
 
+drop policy if exists "detalle visible para usuarios de caja" on public.detalle_billetes;
 create policy "detalle visible para usuarios de caja"
 on public.detalle_billetes for select
 using (exists (select 1 from public.movimientos_caja m where m.id = movimiento_id));
 
+drop policy if exists "detalle insertable para usuarios de caja" on public.detalle_billetes;
 create policy "detalle insertable para usuarios de caja"
 on public.detalle_billetes for insert
 with check (exists (select 1 from public.movimientos_caja m where m.id = movimiento_id));
 
+drop policy if exists "cortes visibles para usuarios de caja" on public.cortes_caja;
 create policy "cortes visibles para usuarios de caja"
 on public.cortes_caja for select
 using (exists (select 1 from public.usuarios u where u.id = usuario_id));
 
+drop policy if exists "cortes insertables por usuarios de caja" on public.cortes_caja;
 create policy "cortes insertables por usuarios de caja"
 on public.cortes_caja for insert
 with check (exists (select 1 from public.usuarios u where u.id = usuario_id));
 
+drop policy if exists "actividad visible para usuarios de caja" on public.registro_actividad;
 create policy "actividad visible para usuarios de caja"
 on public.registro_actividad for select
 using (exists (select 1 from public.usuarios u where u.id = usuario_id));
@@ -164,10 +173,12 @@ insert into storage.buckets (id, name, public)
 values ('recibos-caja', 'recibos-caja', true)
 on conflict (id) do nothing;
 
+drop policy if exists "recibos visibles" on storage.objects;
 create policy "recibos visibles"
 on storage.objects for select
 using (bucket_id = 'recibos-caja');
 
+drop policy if exists "recibos cargables" on storage.objects;
 create policy "recibos cargables"
 on storage.objects for insert
 with check (bucket_id = 'recibos-caja');

@@ -16,7 +16,7 @@ export interface CrearMovimientoInput {
 export async function listarMovimientos() {
   const { data, error } = await supabase
     .from("movimientos_caja")
-    .select("*, usuarios(nombre_usuario), detalle_billetes(*)")
+    .select("*, usuarios!movimientos_caja_usuario_id_fkey(nombre_usuario), detalle_billetes(*)")
     .order("creado_en", { ascending: false });
   if (error) throw new Error(obtenerMensajeError(error));
   return (data ?? []) as MovimientoCaja[];

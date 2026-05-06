@@ -1,15 +1,44 @@
 {
   "name": "control-caja-electron",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "description": "Sistema de Control de Caja para escritorio",
+  "author": "Control de Caja",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "build": "tsc && vite build && tsc -p tsconfig.electron.json",
+    "dist": "npm run build && electron-builder --win nsis",
     "preview": "vite preview",
     "electron": "electron ."
   },
   "main": "dist-electron/main.js",
+  "build": {
+    "appId": "com.controlcaja.desktop",
+    "productName": "Control de Caja",
+    "directories": {
+      "output": "release-1.0.1"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "Control-de-Caja-Setup-${version}.${ext}",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Control de Caja"
+    }
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
     "@vitejs/plugin-react": "^4.3.4",
@@ -17,7 +46,6 @@
     "clsx": "^2.1.1",
     "concurrently": "^9.1.2",
     "date-fns": "^4.1.0",
-    "electron": "^35.1.2",
     "lucide-react": "^0.487.0",
     "recharts": "^2.15.2",
     "tailwind-merge": "^3.2.0",
@@ -30,6 +58,8 @@
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "autoprefixer": "^10.4.21",
+    "electron": "^35.1.2",
+    "electron-builder": "^26.8.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.8.2",

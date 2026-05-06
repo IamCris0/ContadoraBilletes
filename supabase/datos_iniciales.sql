@@ -1,4 +1,6 @@
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
+
+set search_path = public, extensions;
 
 insert into public.usuarios (nombre_usuario, contrasena_hash)
 values
